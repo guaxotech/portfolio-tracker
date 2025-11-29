@@ -16,11 +16,29 @@ import model.Cliente;
  */
 public class ClienteDAO extends PersistenciaJPA{
     
+    public Optional<Cliente> buscarCliente() {
+        EntityManager em = getEntityManager();
+        
+        try{
+            TypedQuery<Cliente> query = em.createQuery("SELECT c FROM Cliente c", Cliente.class);    
+            query.setMaxResults(1);
+            
+            return query.getResultList().stream().findFirst();
+        }
+        catch(NoResultException e)
+        {
+            return Optional.empty();
+        }
+        finally{
+            em.close();
+        }
+    }
+    /*
     public Optional<Cliente> buscarCliente(int idCliente) {
         EntityManager em = getEntityManager();
         
         try{
-            TypedQuery<Cliente> query = em.createQuery("SELECT c FROM clientes WHERE v.cliente_id = :cliente_id", Cliente.class);
+            TypedQuery<Cliente> query = em.createQuery("SELECT c FROM clientes WHERE c.cliente_id = :cliente_id", Cliente.class);
             query.setParameter("cliente_id", idCliente);
             
             return query.getResultList().stream().findFirst();
@@ -33,5 +51,5 @@ public class ClienteDAO extends PersistenciaJPA{
             em.close();
         }
     }
-    
+    */
 }

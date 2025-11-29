@@ -4,6 +4,7 @@
  */
 package model;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorColumn;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
@@ -18,18 +19,21 @@ import jakarta.persistence.Entity;
 @DiscriminatorValue("ACAO")
 
 public class Acao extends Ativo {
-    private String setor;
-    private double dividendYield;
     
+    @Column(name = "setor")
+    private String setor;
+    
+    @Column(name = "nome_empresa")
+    private String nomeEmpresa;
+      
     public Acao(){
         super();
     }
     
-    public Acao(String ticker, String nome, double valorAtual, String setor, double dividendYield)
+    public Acao(String ticker, String descricao, int quantidade, double valorCompra, String setor)
     {
-        super(ticker, nome, valorAtual);
+        super(ticker, descricao, quantidade, valorCompra);
         this.setor = setor;
-        this.dividendYield = dividendYield;
     }
 
     public String getSetor() {
@@ -40,13 +44,15 @@ public class Acao extends Ativo {
         this.setor = setor;
     }
 
-    public double getDividendYield() {
-        return dividendYield;
+    public String getNomeEmpresa() {
+        return nomeEmpresa;
     }
 
-    public void setDividendYield(double dividendYield) {
-        this.dividendYield = dividendYield;
+    public void setNomeEmpresa(String nomeEmpresa) {
+        this.nomeEmpresa = nomeEmpresa;
     }
+    
+    
     
     
     

@@ -38,12 +38,12 @@ public class ContaInvestimento {
     @ManyToOne
     @JoinColumn(name = "cliente_id")
     private Cliente cliente; // N:1
-    
+    /*
     @OneToMany(mappedBy = "conta")
     private List<Posicao> posicoes; // 1:N
-    
+    */
     public ContaInvestimento() {
-        this.posicoes = new ArrayList<>();
+        
     }
     
 }

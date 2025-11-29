@@ -5,18 +5,21 @@
 package view;
 
 import com.formdev.flatlaf.FlatLightLaf;
+import modelDAO.AtivoDAO;
+import modelDAO.ContaInvestimentoDAO;
 
 /**
  *
  * @author vinic
  */
 public class DashboardJF extends javax.swing.JFrame {
+    
+    ContaInvestimentoDAO cdao = new ContaInvestimentoDAO();
+    AtivoDAO adao = new AtivoDAO();
 
-    /**
-     * Creates new form DashboardJF
-     */
     public DashboardJF() {
         initComponents();
+        lblPatrimonioTotal.setText("R$ " + adao.calcularPatrimonioTotal());
     }
 
     /**
@@ -32,7 +35,7 @@ public class DashboardJF extends javax.swing.JFrame {
         jPanel4 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         jSeparator1 = new javax.swing.JSeparator();
-        jLabel2 = new javax.swing.JLabel();
+        lblPatrimonioTotal = new javax.swing.JLabel();
         jPanel5 = new javax.swing.JPanel();
         jLabel3 = new javax.swing.JLabel();
         jSeparator2 = new javax.swing.JSeparator();
@@ -51,7 +54,15 @@ public class DashboardJF extends javax.swing.JFrame {
 
         jLabel1.setText("Patrimônio Total");
 
-        jLabel2.setText("R$ 550.000,00");
+        lblPatrimonioTotal.addAncestorListener(new javax.swing.event.AncestorListener() {
+            public void ancestorAdded(javax.swing.event.AncestorEvent evt) {
+                lblPatrimonioTotalAncestorAdded(evt);
+            }
+            public void ancestorMoved(javax.swing.event.AncestorEvent evt) {
+            }
+            public void ancestorRemoved(javax.swing.event.AncestorEvent evt) {
+            }
+        });
 
         javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
         jPanel4.setLayout(jPanel4Layout);
@@ -60,7 +71,7 @@ public class DashboardJF extends javax.swing.JFrame {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(lblPatrimonioTotal, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jSeparator1)
                     .addGroup(javax.swing.GroupLayout.Alignment.LEADING, jPanel4Layout.createSequentialGroup()
                         .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 439, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -75,7 +86,7 @@ public class DashboardJF extends javax.swing.JFrame {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(lblPatrimonioTotal, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(16, Short.MAX_VALUE))
         );
 
@@ -221,6 +232,10 @@ public class DashboardJF extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    private void lblPatrimonioTotalAncestorAdded(javax.swing.event.AncestorEvent evt) {//GEN-FIRST:event_lblPatrimonioTotalAncestorAdded
+
+    }//GEN-LAST:event_lblPatrimonioTotalAncestorAdded
+
     /**
      * @param args the command line arguments
      */
@@ -261,7 +276,6 @@ public class DashboardJF extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
@@ -278,5 +292,10 @@ public class DashboardJF extends javax.swing.JFrame {
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JSeparator jSeparator3;
     private javax.swing.JSeparator jSeparator4;
+    private javax.swing.JLabel lblPatrimonioTotal;
     // End of variables declaration//GEN-END:variables
+    
+    
+  
+
 }

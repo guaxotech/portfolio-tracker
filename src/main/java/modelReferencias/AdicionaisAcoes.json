@@ -1,0 +1,100 @@
+[
+  {
+    "ticker": "ITUB4",
+    "empresa": "Itaú Unibanco Holding S.A.",
+    "precoAtual": "39.82 BRL",
+    "fechamentoAnterior": "39.97 BRL",
+    "variacaoPercentual": -0.3753
+  },
+  {
+    "ticker": "BBDC4",
+    "empresa": "Banco Bradesco S.A.",
+    "precoAtual": "18.80 BRL",
+    "fechamentoAnterior": "18.79 BRL",
+    "variacaoPercentual": 0.05322
+  },
+  {
+    "ticker": "BBAS3",
+    "empresa": "Banco do Brasil S.A.",
+    "precoAtual": "21.84 BRL",
+    "fechamentoAnterior": "22.00 BRL",
+    "variacaoPercentual": -0.7273
+  },
+  {
+    "ticker": "PETR4",
+    "empresa": "Petrobras PN",
+    "precoAtual": "32.54 BRL",
+    "fechamentoAnterior": "32.57 BRL",
+    "variacaoPercentual": -0.09211
+  },
+  {
+    "ticker": "PETR3",
+    "empresa": "Petrobras ON",
+    "precoAtual": "34.39 BRL",
+    "fechamentoAnterior": "34.56 BRL",
+    "variacaoPercentual": -0.4919
+  },
+  {
+    "ticker": "VALE3",
+    "empresa": "Vale S.A.",
+    "precoAtual": "65.09 BRL",
+    "fechamentoAnterior": "65.16 BRL",
+    "variacaoPercentual": -0.1074
+  },
+  {
+    "ticker": "BEEF3",
+    "empresa": "Minerva S.A.",
+    "precoAtual": "6.36 BRL",
+    "fechamentoAnterior": "6.35 BRL",
+    "variacaoPercentual": 0.1575
+  },
+  {
+    "ticker": "JBSS3",
+    "empresa": "JBS S.A.",
+    "precoAtual": "70.82 USD",
+    "fechamentoAnterior": "70.31 USD",
+    "variacaoPercentual": 0.7254
+  },
+  {
+    "ticker": "MGLU3",
+    "empresa": "Magazine Luiza S.A.",
+    "precoAtual": "9.90 BRL",
+    "fechamentoAnterior": "9.63 BRL",
+    "variacaoPercentual": 2.8037
+  },
+  {
+    "ticker": "AMER3",
+    "empresa": "Americanas S.A.",
+    "precoAtual": "5.65 BRL",
+    "fechamentoAnterior": "5.61 BRL",
+    "variacaoPercentual": 0.713
+  },
+  {
+    "ticker": "VIVT3",
+    "empresa": "Telefônica Brasil S.A.",
+    "precoAtual": "34.71 BRL",
+    "fechamentoAnterior": "34.48 BRL",
+    "variacaoPercentual": 0.6671
+  },
+  {
+    "ticker": "EGIE3",
+    "empresa": "Engie Brasil Energia S.A.",
+    "precoAtual": "43.43 BRL",
+    "fechamentoAnterior": "42.64 BRL",
+    "variacaoPercentual": 1.8527
+  },
+  {
+    "ticker": "HAPV3",
+    "empresa": "Hapvida Participações e Investimentos S.A.",
+    "precoAtual": "17.13 BRL",
+    "fechamentoAnterior": "17.42 BRL",
+    "variacaoPercentual": -1.6648
+  },
+  {
+    "ticker": "WEGE3",
+    "empresa": "WEG S.A.",
+    "precoAtual": "43.19 BRL",
+    "fechamentoAnterior": "43.22 BRL",
+    "variacaoPercentual": -0.06941
+  }
+]

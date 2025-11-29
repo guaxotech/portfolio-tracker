@@ -1,0 +1,37 @@
+[
+  {
+    "ticker": "MXRF11",
+    "fundo": "Maxi Renda Fundo de Investimento Imobiliario FII",
+    "precoAtual": "9.55 BRL",
+    "fechamentoAnterior": "9.57 BRL",
+    "variacaoPercentual": -0.209
+  },
+  {
+    "ticker": "HGLG11",
+    "fundo": "CSHG Logistica Fundo de Investimento Imobiliario FII",
+    "precoAtual": "159.70 BRL",
+    "fechamentoAnterior": "160.00 BRL",
+    "variacaoPercentual": -0.1875
+  },
+  {
+    "ticker": "KNRI11",
+    "fundo": "Kinea Renda Imobiliaria FII",
+    "precoAtual": "147.45 BRL",
+    "fechamentoAnterior": "147.65 BRL",
+    "variacaoPercentual": -0.1355
+  },
+  {
+    "ticker": "XPML11",
+    "fundo": "XP Malls Fundo de Investimento Imobiliario FII",
+    "precoAtual": "106.00 BRL",
+    "fechamentoAnterior": "105.90 BRL",
+    "variacaoPercentual": 0.09443
+  },
+  {
+    "ticker": "BRCR11",
+    "fundo": "BTG Pactual Corporate Office Fund FII",
+    "precoAtual": "42.40 BRL",
+    "fechamentoAnterior": "42.23 BRL",
+    "variacaoPercentual": 0.4026
+  }
+]
