@@ -77,7 +77,7 @@ src/
 
 
 ## 👨‍💻 Autor
-Desenvolvido por Vinicios 
+Desenvolvido por Vinícios 
 📧 Contato: vinicioscarini10@gmail.com 
 🔗 LinkedIn: https://www.linkedin.com/in/vinicios-c-2311b8301/
 
