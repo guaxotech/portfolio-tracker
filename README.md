@@ -79,6 +79,65 @@ src/
 
 [ ] Exportação de relatórios avançados
 
+## 📊 Diagrama de Classes UML
+
+```mermaid
+classDiagram
+    Cliente "1" --> "*" ContaInvestimento
+    ContaInvestimento "1" --> "*" Transacao
+    Transacao "*" --> "1" Ativo
+    Ativo <|-- Acao
+    Ativo <|-- FundoImobiliario
+
+    class Cliente {
+        - Long id
+        - String nome
+        - String cpf
+        - String email
+        + validarCPF()
+        + getters/setters
+    }
+
+    class ContaInvestimento {
+        - int idConta
+        - double saldoDisponivel
+        + getters/setters
+    }
+
+    class Transacao {
+        - int idTransacao
+        - LocalDateTime data
+        - TipoTransacao tipo (COMPRA/VENDA)
+        - int quantidade
+        - double precoUnitario
+        + getters/setters
+    }
+
+    class Ativo {
+        <<abstract>>
+        - Long id
+        - String ticker
+        - String descricao
+        - double valorCompra
+        - double valorAtual
+        - int quantidade
+        - LocalDateTime dataCompra
+        - boolean ativoNaCarteira
+        + atualizarValorAleatorio()
+        + getters/setters
+    }
+
+    class Acao {
+        - String setor
+        - String nomeEmpresa
+        + getters/setters
+    }
+    
+    class FundoImobiliario {
+        - tipoFundo tipo
+        - String fundo
+        + getters/setters
+    }
 
 ## 👨‍💻 Autor
 Desenvolvido por Vinícios 
