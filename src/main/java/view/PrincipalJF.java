@@ -9,6 +9,8 @@ import javax.swing.JDialog;
 import com.formdev.flatlaf.FlatLightLaf;
 import com.formdev.flatlaf.FlatDarkLaf;
 import java.util.Optional;
+import javax.swing.JScrollPane;
+import javax.swing.Timer;
 
 import model.Cliente;
 import modelDAO.AtivoDAO;
@@ -40,18 +42,13 @@ public class PrincipalJF extends javax.swing.JFrame {
            nomeCliente.setText(c.get().getNome());
         }
         
-        Double patrimonioTotal = adao.calcularPatrimonioTotal();
-        Double patrimonioAcoes = adao.calcularPatrimonioAcoes();
-        Double patrimonioFiis = adao.calcularPatrimonioFiis();
+        atualizarDados(); 
         
-        String labelPatrimonio = "Total: R$ " + patrimonioTotal + "\n" 
-                + "Ações: R$ " + patrimonioAcoes + "\n" + "FIIs: R$ " + patrimonioFiis;
+        Timer timer = new Timer(5000, e->atualizarDados()); // atualiza os dados a cada 5s
+        timer.start();
         
-        String lblPatrimonioFormatado = "<html>" + labelPatrimonio.replace("\n", "<br>") + "</html>";
-        labelPatrimonioTotal.setText(lblPatrimonioFormatado);
-        
-        lblQuantidadeTotalAtivos.setText("" + adao.quantidadeTotalAtivos());
-        lblQuantidadeTotalCotas.setText("" + adao.quantidadeTotalCotas());
+         JScrollPane scrollPane = new JScrollPane(jPanel11);
+         setContentPane(scrollPane);
     }
 
     /**
@@ -88,11 +85,11 @@ public class PrincipalJF extends javax.swing.JFrame {
         btnAbrirCadastrarAtivos = new javax.swing.JMenuItem();
         btnAbrirListaAcoes = new javax.swing.JMenuItem();
         btnAbrirListaFiis = new javax.swing.JMenuItem();
-        jMenu8 = new javax.swing.JMenu();
+        menuHistorico = new javax.swing.JMenu();
+        menuListaTransacoes = new javax.swing.JMenuItem();
         jMenu1 = new javax.swing.JMenu();
         jMenu9 = new javax.swing.JMenu();
-        jMenuItem1 = new javax.swing.JMenuItem();
-        jMenuItem5 = new javax.swing.JMenuItem();
+        menuExportarDados = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setBackground(new java.awt.Color(128, 0, 128));
@@ -166,9 +163,9 @@ public class PrincipalJF extends javax.swing.JFrame {
                 .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 29, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(labelPatrimonioTotal, javax.swing.GroupLayout.PREFERRED_SIZE, 96, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(18, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(labelPatrimonioTotal, javax.swing.GroupLayout.DEFAULT_SIZE, 132, Short.MAX_VALUE)
+                .addContainerGap())
         );
 
         jPanel2.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
@@ -203,7 +200,7 @@ public class PrincipalJF extends javax.swing.JFrame {
                 .addComponent(jSeparator2, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addComponent(lblQuantidadeTotalAtivos)
-                .addContainerGap(12, Short.MAX_VALUE))
+                .addContainerGap(32, Short.MAX_VALUE))
         );
 
         jPanel3.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
@@ -238,7 +235,7 @@ public class PrincipalJF extends javax.swing.JFrame {
                 .addComponent(jSeparator3, javax.swing.GroupLayout.PREFERRED_SIZE, 10, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addComponent(lblQuantidadeTotalCotas)
-                .addContainerGap(12, Short.MAX_VALUE))
+                .addContainerGap(50, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout jPanel12Layout = new javax.swing.GroupLayout(jPanel12);
@@ -263,13 +260,13 @@ public class PrincipalJF extends javax.swing.JFrame {
                 .addComponent(btnCadastrarDadosPessoais)
                 .addGap(2, 2, 2)
                 .addComponent(panelRecepcaoCliente, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(18, 18, 18)
                 .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(18, 18, 18)
                 .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGap(18, 18, 18)
                 .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(34, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout jPanel11Layout = new javax.swing.GroupLayout(jPanel11);
@@ -284,7 +281,7 @@ public class PrincipalJF extends javax.swing.JFrame {
             jPanel11Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel11Layout.createSequentialGroup()
                 .addComponent(jPanel12, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 24, Short.MAX_VALUE))
+                .addGap(0, 56, Short.MAX_VALUE))
         );
 
         jMenuBar2.setBackground(new java.awt.Color(255, 255, 224));
@@ -340,17 +337,35 @@ public class PrincipalJF extends javax.swing.JFrame {
 
         jMenuBar2.add(menuPortfolio);
 
-        jMenu8.setText("Histórico");
-        jMenuBar2.add(jMenu8);
+        menuHistorico.setText("Histórico");
+        menuHistorico.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                menuHistoricoActionPerformed(evt);
+            }
+        });
+
+        menuListaTransacoes.setText("Lista de Transações");
+        menuListaTransacoes.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                menuListaTransacoesActionPerformed(evt);
+            }
+        });
+        menuHistorico.add(menuListaTransacoes);
+
+        jMenuBar2.add(menuHistorico);
 
         jMenu1.setText("Proventos");
         jMenuBar2.add(jMenu1);
 
         jMenu9.setText("Ferramentas e Planejamento");
-        jMenu9.add(jMenuItem1);
 
-        jMenuItem5.setText("Exportar Dados");
-        jMenu9.add(jMenuItem5);
+        menuExportarDados.setText("Exportar Dados");
+        menuExportarDados.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                menuExportarDadosActionPerformed(evt);
+            }
+        });
+        jMenu9.add(menuExportarDados);
 
         jMenuBar2.add(jMenu9);
 
@@ -368,8 +383,9 @@ public class PrincipalJF extends javax.swing.JFrame {
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addGap(0, 0, Short.MAX_VALUE)
-                .addComponent(jPanel11, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jPanel11, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
         );
 
         pack();
@@ -416,6 +432,21 @@ public class PrincipalJF extends javax.swing.JFrame {
         ListaFiisJF listaFiis = new ListaFiisJF();
         listaFiis.setVisible(true);
     }//GEN-LAST:event_btnAbrirListaFiisActionPerformed
+
+    private void menuListaTransacoesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuListaTransacoesActionPerformed
+        ListaTransacoesJF listaTransacoes = new ListaTransacoesJF();
+        listaTransacoes.setVisible(true);
+    }//GEN-LAST:event_menuListaTransacoesActionPerformed
+
+    private void menuHistoricoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuHistoricoActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_menuHistoricoActionPerformed
+
+    private void menuExportarDadosActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuExportarDadosActionPerformed
+        // TODO add your handling code here:
+        ExportarDadosJD dialogoExportarDados = new ExportarDadosJD(this, true);
+        dialogoExportarDados.setVisible(true);
+    }//GEN-LAST:event_menuExportarDadosActionPerformed
 
     /**
      * @param args the command line arguments
@@ -465,11 +496,8 @@ public class PrincipalJF extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JMenu jMenu1;
-    private javax.swing.JMenu jMenu8;
     private javax.swing.JMenu jMenu9;
     private javax.swing.JMenuBar jMenuBar2;
-    private javax.swing.JMenuItem jMenuItem1;
-    private javax.swing.JMenuItem jMenuItem5;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel11;
     private javax.swing.JPanel jPanel12;
@@ -482,8 +510,30 @@ public class PrincipalJF extends javax.swing.JFrame {
     private javax.swing.JLabel lblQuantidadeTotalAtivos;
     private javax.swing.JLabel lblQuantidadeTotalCotas;
     private javax.swing.JMenu menuDashboard;
+    private javax.swing.JMenuItem menuExportarDados;
+    private javax.swing.JMenu menuHistorico;
+    private javax.swing.JMenuItem menuListaTransacoes;
     private javax.swing.JMenu menuPortfolio;
     private javax.swing.JLabel nomeCliente;
     private javax.swing.JPanel panelRecepcaoCliente;
     // End of variables declaration//GEN-END:variables
+    private void atualizarDados() {
+        Double patrimonioTotal = adao.calcularPatrimonioTotal();
+        Double patrimonioAcoes = adao.calcularPatrimonioAcoes();
+        Double patrimonioFiis = adao.calcularPatrimonioFiis();
+        
+        String labelPatrimonio = "Total: R$ " + String.format("%.2f", patrimonioTotal) + "\n" 
+                + "Ações: R$ " + String.format("%.2f", patrimonioAcoes) + "\n" + "FIIs: R$ " 
+                + String.format("%.2f", patrimonioFiis);
+        
+        String lblPatrimonioFormatado = "<html>" + labelPatrimonio.replace("\n", "<br>") + "</html>";
+        labelPatrimonioTotal.setText(lblPatrimonioFormatado);
+        
+        
+        lblQuantidadeTotalAtivos.setText("" + adao.quantidadeTotalAtivos());
+        lblQuantidadeTotalCotas.setText("" + adao.quantidadeTotalCotas());
+     
+    }
+
+
 }

@@ -26,17 +26,18 @@ public class Transacao {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int idTransacao;
-    
+       
     private LocalDateTime data;
     
-    public enum tipoTransacao {
+    public enum TipoTransacao {
         COMPRA,
         VENDA
     }
     
-    private tipoTransacao tipo;
+    private TipoTransacao tipo;
     
-    private int quantiodade;
+    private int quantidade;
+    
     private double precoUnitario;
    
     @ManyToOne
@@ -68,20 +69,20 @@ public class Transacao {
         this.data = data;
     }
 
-    public tipoTransacao getTipo() {
+    public TipoTransacao getTipo() {
         return tipo;
     }
 
-    public void setTipo(tipoTransacao tipo) {
+    public void setTipo(TipoTransacao tipo) {
         this.tipo = tipo;
     }
 
-    public int getQuantiodade() {
-        return quantiodade;
+    public int getQuantidade() {
+        return quantidade;
     }
 
-    public void setQuantiodade(int quantiodade) {
-        this.quantiodade = quantiodade;
+    public void setQuantidade(int quantidade) {
+        this.quantidade = quantidade;
     }
 
     public double getPrecoUnitario() {
@@ -90,6 +91,14 @@ public class Transacao {
 
     public void setPrecoUnitario(double precoUnitario) {
         this.precoUnitario = precoUnitario;
+    }
+    
+    public Ativo getAtivo() {
+        return ativo;
+    }
+
+    public void setAtivo(Ativo ativo) {
+        this.ativo = ativo;
     }
     
 

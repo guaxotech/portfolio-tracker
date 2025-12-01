@@ -7,6 +7,7 @@ package view;
 import java.util.Optional;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JOptionPane;
 import model.Cliente;
 import modelDAO.ClienteDAO;
 
@@ -179,6 +180,8 @@ public class CadastrarDadosPessoaisJD extends javax.swing.JDialog {
             }
             try {
                 cdao.persist(clienteEncontrado);
+                JOptionPane.showMessageDialog(this, "Dados Pessoais atualizados com Sucesso!");
+                this.dispose();
             } catch (Exception ex) {
                 Logger.getLogger(CadastrarDadosPessoaisJD.class.getName()).log(Level.SEVERE, null, ex);
             }

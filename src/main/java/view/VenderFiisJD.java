@@ -4,13 +4,18 @@
  */
 package view;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JOptionPane;
 import model.Ativo;
 import model.FundoImobiliario;
+import model.Transacao;
 import modelDAO.AtivoDAO;
+import modelDAO.TransacaoDAO;
 
 /**
  *
@@ -18,6 +23,7 @@ import modelDAO.AtivoDAO;
  */
 public class VenderFiisJD extends javax.swing.JDialog {
     AtivoDAO adao = new AtivoDAO();
+    TransacaoDAO tdao = new TransacaoDAO();
     private FundoImobiliario fii;
 
     /**
@@ -45,7 +51,7 @@ public class VenderFiisJD extends javax.swing.JDialog {
         jLabel2 = new javax.swing.JLabel();
         cmbTickers = new javax.swing.JComboBox<>();
         spnQuantidade = new javax.swing.JSpinner();
-        jButton1 = new javax.swing.JButton();
+        btnConfirmarVendas = new javax.swing.JButton();
 
         jTextArea1.setColumns(20);
         jTextArea1.setRows(5);
@@ -59,7 +65,12 @@ public class VenderFiisJD extends javax.swing.JDialog {
 
         cmbTickers.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
 
-        jButton1.setText("Confirmar Vendas");
+        btnConfirmarVendas.setText("Confirmar Vendas");
+        btnConfirmarVendas.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnConfirmarVendasActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -77,7 +88,7 @@ public class VenderFiisJD extends javax.swing.JDialog {
                 .addGap(0, 0, Short.MAX_VALUE))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap(135, Short.MAX_VALUE)
-                .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 135, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(btnConfirmarVendas, javax.swing.GroupLayout.PREFERRED_SIZE, 135, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(130, 130, 130))
         );
         layout.setVerticalGroup(
@@ -92,12 +103,40 @@ public class VenderFiisJD extends javax.swing.JDialog {
                     .addComponent(jLabel2)
                     .addComponent(spnQuantidade, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 54, Short.MAX_VALUE)
-                .addComponent(jButton1)
+                .addComponent(btnConfirmarVendas)
                 .addGap(52, 52, 52))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void btnConfirmarVendasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnConfirmarVendasActionPerformed
+        // TODO add your handling code here:
+        String tickerSelecionado = (String) cmbTickers.getSelectedItem();
+        int quantidade = (int) spnQuantidade.getValue();
+        
+        FundoImobiliario fii = (FundoImobiliario) adao.buscarAtivo(tickerSelecionado);
+        
+        if(fii.getQuantidade() >= quantidade)
+        {
+            fii.setQuantidade(fii.getQuantidade() - quantidade);
+            
+            try {
+                adao.persist(fii);
+                registrarTransacao(fii, quantidade);
+            } catch (Exception ex) {
+                Logger.getLogger(VenderFiisJD.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            JOptionPane.showMessageDialog(rootPane, "Venda de " + quantidade + " cotas de " + tickerSelecionado +
+                     " realizadas com sucesso! ");
+        }
+        else{
+            JOptionPane.showMessageDialog(rootPane, "Você não possui cotas de " + 
+                    tickerSelecionado + " suficientes para essa venda!");
+        }
+        
+        this.dispose();
+    }//GEN-LAST:event_btnConfirmarVendasActionPerformed
 
     /**
      * @param args the command line arguments
@@ -142,8 +181,8 @@ public class VenderFiisJD extends javax.swing.JDialog {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnConfirmarVendas;
     private javax.swing.JComboBox<String> cmbTickers;
-    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JScrollPane jScrollPane1;
@@ -157,7 +196,7 @@ public class VenderFiisJD extends javax.swing.JDialog {
         listaDeTickers.add("Selecione um Ticker");
         
         try{
-            List<Ativo> listaFiis = adao.listaFiis();
+            List<Ativo> listaFiis = adao.listaAtivosPorTipo(FundoImobiliario.class);
             
             for(Ativo ativo : listaFiis){
                 listaDeTickers.add(ativo.getTicker());
@@ -210,5 +249,22 @@ public class VenderFiisJD extends javax.swing.JDialog {
         });
     }
 
+    private void registrarTransacao(Ativo fii, int quantidade){
+        Transacao transacao = new Transacao();
+        
+        transacao.setQuantidade(quantidade);
+        transacao.setPrecoUnitario(fii.getValorCompra());
+        transacao.setData(LocalDateTime.now());
+        transacao.setTipo(Transacao.TipoTransacao.VENDA);
+        transacao.setAtivo(fii);
+        
+        try {
+            tdao.persist(transacao);
+        } catch (Exception ex) {
+            Logger.getLogger(ComprarAcoesJD.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        
+    }
 
 }

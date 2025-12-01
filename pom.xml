@@ -58,5 +58,14 @@
     <artifactId>jackson-databind</artifactId>
     <version>2.17.1</version>
   </dependency>
+  
+  <!-- Gráfico da Dashboard -->
+  <dependency>
+    <groupId>org.jfree</groupId>
+    <artifactId>jfreechart</artifactId>
+    <version>1.5.5</version>
+   <type>jar</type>
+  </dependency>
+
     </dependencies>
 </project>

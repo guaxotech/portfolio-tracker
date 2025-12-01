@@ -4,11 +4,18 @@
  */
 package view;
 
+import java.time.LocalDateTime;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
+import javax.swing.JScrollPane;
+import javax.swing.Timer;
 import javax.swing.table.DefaultTableModel;
 import model.Ativo;
 import model.FundoImobiliario;
+import model.Transacao;
 import modelDAO.AtivoDAO;
+import modelDAO.TransacaoDAO;
 
 /**
  *
@@ -16,6 +23,7 @@ import modelDAO.AtivoDAO;
  */
 public class ListaFiisJF extends javax.swing.JFrame {
     AtivoDAO adao = new AtivoDAO();
+    TransacaoDAO tdao = new TransacaoDAO();
 
     /**
      * Creates new form ListaFiisJF
@@ -23,6 +31,11 @@ public class ListaFiisJF extends javax.swing.JFrame {
     public ListaFiisJF() {
         initComponents();
         loadTabelaFiis();
+        
+        Timer timer = new Timer(8000, e->loadTabelaFiis());
+        timer.start();
+        
+        jScrollPane1.setViewportView(tblListaFiis);
     }
 
     /**
@@ -41,18 +54,19 @@ public class ListaFiisJF extends javax.swing.JFrame {
         btnEditar = new javax.swing.JButton();
         btnComprar = new javax.swing.JButton();
         btnVender = new javax.swing.JButton();
+        btnDesincorporar = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
         tblListaFiis.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null}
+                {null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null, null}
             },
             new String [] {
-                "Ticker", "Tipo de Fundo", "Quantidade", "Descrição", "Valor Atual", "Valor de Compra", "Data da Compra (Última)"
+                "Ticker", "Tipo de Fundo", "Quantidade", "Descrição", "Valor Atual", "Valor de Compra", "Última Movimentação", "Valor da Posição"
             }
         ));
         jScrollPane1.setViewportView(tblListaFiis);
@@ -88,6 +102,13 @@ public class ListaFiisJF extends javax.swing.JFrame {
             }
         });
 
+        btnDesincorporar.setText("Desincorporar da Carteira");
+        btnDesincorporar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnDesincorporarActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -109,7 +130,9 @@ public class ListaFiisJF extends javax.swing.JFrame {
                         .addGap(28, 28, 28)
                         .addComponent(btnComprar)
                         .addGap(30, 30, 30)
-                        .addComponent(btnVender)))
+                        .addComponent(btnVender)
+                        .addGap(181, 181, 181)
+                        .addComponent(btnDesincorporar)))
                 .addContainerGap(32, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
@@ -125,7 +148,8 @@ public class ListaFiisJF extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnEditar)
                     .addComponent(btnComprar)
-                    .addComponent(btnVender))
+                    .addComponent(btnVender)
+                    .addComponent(btnDesincorporar))
                 .addGap(13, 13, 13))
         );
 
@@ -172,7 +196,7 @@ public class ListaFiisJF extends javax.swing.JFrame {
             // ✅ FIM DO BLOCO DE VERIFICAÇÃO DE TIPO (CHAVE FINAL DENTRO DO if(ativoEncontrado != null))
         } else {
             // Ativo não encontrado (ativoEncontrado == null)
-            JOptionPane.showMessageDialog(rootPane, "FII não encontrado. Verifique se o código está correto.", "Erro de Busca", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(rootPane, "FII não encontrado. Verifique se o Ticker está correto.", "Erro de Busca", JOptionPane.WARNING_MESSAGE);
         }
     } else {
         JOptionPane.showMessageDialog(rootPane, "Selecione uma linha para editar.", "Atenção", JOptionPane.INFORMATION_MESSAGE);
@@ -190,6 +214,48 @@ public class ListaFiisJF extends javax.swing.JFrame {
         VenderFiisJD dialogoVenderFiis = new VenderFiisJD(this, true);
         dialogoVenderFiis.setVisible(true);
     }//GEN-LAST:event_btnVenderActionPerformed
+
+    private void btnDesincorporarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDesincorporarActionPerformed
+        // TODO add your handling code here:
+
+        if (tblListaFiis.getSelectedRow() != -1) {
+
+            String tickerFii = (String) tblListaFiis.getModel().getValueAt(tblListaFiis.getSelectedRow(), 0);
+            Ativo ativoEncontrado = adao.buscarAtivo(tickerFii);
+            
+            
+
+            if (ativoEncontrado != null) {
+                 int op_remover = JOptionPane.showConfirmDialog(rootPane, "VOCÊ TEM CERTEZA DE QUE DESEJA REMOVER O TICKER " 
+                         + tickerFii + " COMPLETAMENTE DE SUA CARTEIRA? ", "ATENÇÃO!", JOptionPane.OK_CANCEL_OPTION);
+                 
+                 if(op_remover == JOptionPane.OK_OPTION)
+                 {
+                     try{
+                         int quantidade = ativoEncontrado.getQuantidade();
+                         
+                         registrarTransacao(ativoEncontrado, quantidade);
+                         
+                         adao.desincorporar(ativoEncontrado);
+                         
+                         JOptionPane.showMessageDialog(this, quantidade + " COTAS DE " + tickerFii 
+                                 + " FORAM VENDIDAS E O ATIVO FOI DESINCORPORADO DE SUA CARTEIRA.");
+                         
+                     }catch(Exception e)
+                     {
+                         JOptionPane.showMessageDialog(this, "Erro ao tentar DESINCORPORAR O ATIVO");
+                         e.printStackTrace();
+                         return;
+                     }
+                 }
+            
+            }
+        }
+        else
+        {
+            JOptionPane.showMessageDialog(rootPane, "Selecione uma linha para editar.", "Atenção", JOptionPane.INFORMATION_MESSAGE);
+        }
+    }//GEN-LAST:event_btnDesincorporarActionPerformed
 
     /**
      * @param args the command line arguments
@@ -230,26 +296,50 @@ public class ListaFiisJF extends javax.swing.JFrame {
         DefaultTableModel modelo = (DefaultTableModel) tblListaFiis.getModel();
         modelo.setNumRows(0);
         
-        for(Ativo obj : adao.listaFiis())
+        for(Ativo obj : adao.listaAtivosPorTipo(FundoImobiliario.class))
         {
             // fazer o casting (mudar o tipo do dado) p/ Fundo Imobiliario -> Assim, consegue-se acessar o método getTipo(), que é da classe filha
             FundoImobiliario fii = (FundoImobiliario) obj;
+            obj.atualizarValorAleatorio();
+            
+            String valorAtualFmt   = String.format("%.2f", fii.getValorAtual());
+            String valorCompraFmt  = String.format("%.2f", fii.getValorCompra());
+            String valorPosicaoFmt = String.format("%.2f", fii.getQuantidade() * fii.getValorAtual());
             
             Object[] linha = {
                 fii.getTicker(),
-                fii.getQuantidade(),
                 fii.getTipo(),
+                fii.getQuantidade(),
                 fii.getDescricao(),
-                fii.getValorAtual(),
-                fii.getValorCompra(),
-                fii.getDataCompra()
+                valorAtualFmt,
+                valorCompraFmt,
+                fii.getDataCompra(),
+                valorPosicaoFmt    
             };
               modelo.addRow(linha);
         }
     }
+    private void registrarTransacao(Ativo fii, int quantidade){
+        Transacao transacao = new Transacao();
+        
+        transacao.setQuantidade(quantidade);
+        transacao.setPrecoUnitario(fii.getValorCompra());
+        transacao.setData(LocalDateTime.now());
+        transacao.setTipo(Transacao.TipoTransacao.VENDA);
+        transacao.setAtivo(fii);
+        
+        try {
+            tdao.persist(transacao);
+        } catch (Exception ex) {
+            Logger.getLogger(ComprarAcoesJD.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnComprar;
+    private javax.swing.JButton btnDesincorporar;
     private javax.swing.JButton btnEditar;
     private javax.swing.JButton btnVender;
     private javax.swing.JButton btnVoltar;

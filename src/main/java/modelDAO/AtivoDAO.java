@@ -7,6 +7,7 @@ package modelDAO;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.persistence.TypedQuery;
+import java.util.Collections;
 import java.util.List;
 import model.Ativo;
 import model.ContaInvestimento;
@@ -18,8 +19,9 @@ import model.ContaInvestimento;
 public class AtivoDAO extends PersistenciaJPA {
     public List<Ativo> listaAtivos(){
         EntityManager em = getEntityManager();
+        em.clear();
         try{
-            TypedQuery<Ativo> query = em.createQuery("Select a FROM ativos a", Ativo.class);
+            TypedQuery<Ativo> query = em.createQuery("Select a FROM Ativo a WHERE a.ativoNaCarteira = true", Ativo.class);
             return query.getResultList();
         }catch(Exception e)
         {
@@ -32,7 +34,7 @@ public class AtivoDAO extends PersistenciaJPA {
         EntityManager em = getEntityManager();
            
         try {
-            TypedQuery<Double> query = em.createQuery("SELECT SUM(a.valorAtual * a.quantidade) FROM Ativo a ", Double.class);
+            TypedQuery<Double> query = em.createQuery("SELECT SUM(a.valorAtual * a.quantidade) FROM Ativo a WHERE a.ativoNaCarteira = true", Double.class);
             
             Double resultado = query.getSingleResult();
             
@@ -49,7 +51,7 @@ public class AtivoDAO extends PersistenciaJPA {
         EntityManager em = getEntityManager();
         
         try {
-            TypedQuery<Double> query = em.createQuery("SELECT SUM(a.valorAtual * a.quantidade) FROM Ativo a WHERE TYPE(a) = 'ACAO'", Double.class);
+            TypedQuery<Double> query = em.createQuery("SELECT SUM(a.valorAtual * a.quantidade) FROM Ativo a WHERE TYPE(a) = 'ACAO' AND a.ativoNaCarteira = true", Double.class);
         
             Double resultado = query.getSingleResult();
             
@@ -66,7 +68,7 @@ public class AtivoDAO extends PersistenciaJPA {
         EntityManager em = getEntityManager();
         
         try{
-            TypedQuery<Double> query = em.createQuery("SELECT SUM(a.valorAtual * a.quantidade) FROM Ativo a WHERE TYPE(a) = 'FII'", Double.class);
+            TypedQuery<Double> query = em.createQuery("SELECT SUM(a.valorAtual * a.quantidade) FROM Ativo a WHERE TYPE(a) = 'FII' AND a.ativoNaCarteira = true", Double.class);
             
             Double resultado = query.getSingleResult();
             
@@ -79,12 +81,12 @@ public class AtivoDAO extends PersistenciaJPA {
             }
         }
     }
-    public Boolean buscarAtivoJaCadastrado(String ticker) {
+    public Boolean buscarAtivoJaCadastrado(String ticker) { ///
         EntityManager em = getEntityManager();
 
         try {
             TypedQuery<Ativo> query = em.createQuery(
-                    "SELECT a FROM Ativo a WHERE a.ticker = :ticker", Ativo.class
+                    "SELECT a FROM Ativo a WHERE a.ticker = :ticker AND a.ativoNaCarteira = true", Ativo.class
             );
             query.setParameter("ticker", ticker);
 
@@ -101,34 +103,71 @@ public class AtivoDAO extends PersistenciaJPA {
             return false;
         }
     }
-    public List<Ativo> listaAcoes(){
+    
+    public Boolean verificarAtivoDesincorporado(String ticker) { ///
         EntityManager em = getEntityManager();
-        try{
-            TypedQuery<Ativo> query = em.createQuery("SELECT a FROM Ativo a WHERE TYPE(a) = 'ACAO'", Ativo.class);
-            return query.getResultList();
+
+        try {
+            TypedQuery<Ativo> query = em.createQuery(
+                    "SELECT a FROM Ativo a WHERE a.ticker = :ticker AND a.ativoNaCarteira = false", Ativo.class
+            );
+            query.setParameter("ticker", ticker);
+
+            query.setMaxResults(1);
             
-        }catch(Exception e){
+            Boolean ativoExiste = !query.getResultList().isEmpty(); // verificar se a o resultado retornado na query n está vazio
+
+            return ativoExiste;
+
+        } catch (NoResultException e) {
+            return false;
+        } catch (Exception e) {
             e.printStackTrace();
-            return null;
+            return false;
         }
     }
-    public List<Ativo> listaFiis(){
-        EntityManager em = getEntityManager();
-        try{
-            TypedQuery<Ativo> query = em.createQuery("SELECT a FROM Ativo a WHERE TYPE(a) = 'FII'", Ativo.class);
-            return query.getResultList();
-            
-        }catch(Exception e){
-            e.printStackTrace();
-            return null;
-        }
+    
+    
+    public List<Ativo> listaAtivosPorTipo(Class<? extends Ativo> tipoClasse) {
+    EntityManager em = getEntityManager(); 
+    em.clear(); // limpar o em para que a tabela seja att fielmente
+    try {
+        TypedQuery<Ativo> query = em.createQuery(
+            "SELECT a FROM Ativo a WHERE TYPE(a) = :tipo AND a.ativoNaCarteira = true", Ativo.class);
+        query.setParameter("tipo", tipoClasse);
+        return query.getResultList();
+    } catch (Exception e) {
+        e.printStackTrace();
+        return Collections.emptyList(); // melhor que retornar null
     }
+}
     public Ativo buscarAtivo(String ticker) {
         EntityManager em = getEntityManager();
 
         try {
             TypedQuery<Ativo> query = em.createQuery(
-                    "SELECT a FROM Ativo a WHERE a.ticker = :ticker", Ativo.class
+                    "SELECT a FROM Ativo a WHERE a.ticker = :ticker AND a.ativoNaCarteira = true", Ativo.class
+            );
+            query.setParameter("ticker", ticker);
+
+            query.setMaxResults(1);
+            
+            return query.getSingleResult();
+
+        } catch (NoResultException e) {
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+        return null;
+    }
+    public Ativo buscarAtivoDesincorporado(String ticker) {
+        EntityManager em = getEntityManager();
+
+        try {
+            TypedQuery<Ativo> query = em.createQuery(
+                    "SELECT a FROM Ativo a WHERE a.ticker = :ticker AND a.ativoNaCarteira = false", Ativo.class
             );
             query.setParameter("ticker", ticker);
 
@@ -148,25 +187,78 @@ public class AtivoDAO extends PersistenciaJPA {
         EntityManager em = getEntityManager();
         
         try{
-            TypedQuery<Long> query = em.createQuery("SELECT COUNT(a) FROM Ativo a", Long.class );
+            TypedQuery<Long> query = em.createQuery("SELECT COUNT(a) FROM Ativo a WHERE a.ativoNaCarteira = true", Long.class );
             
-            return query.getSingleResult();
+            Long resultado = query.getSingleResult();
+            return (resultado != null) ? resultado : 0L;
         }catch(Exception e){
             e.printStackTrace();
-            return null;
+            return 0L;
         }
     }
     public Long quantidadeTotalCotas() {
         EntityManager em = getEntityManager();
         
         try{
-            TypedQuery<Long> query = em.createQuery("SELECT SUM(a.quantidade) FROM Ativo a", Long.class );
+            TypedQuery<Long> query = em.createQuery("SELECT SUM(a.quantidade) FROM Ativo a WHERE a.ativoNaCarteira = true", Long.class );
             
-            return query.getSingleResult();
+            Long resultado = query.getSingleResult();
+            return (resultado != null) ? resultado : 0L;
         }catch(Exception e){
             e.printStackTrace();
-            return null;
+            return 0L;
         }
     }
+    public Long quantidadeTotalCotasPorTipo(Class<? extends Ativo> tipoClasse) {
+    EntityManager em = getEntityManager();
+    try {
+        TypedQuery<Long> query = em.createQuery(
+            "SELECT SUM(a.quantidade) FROM Ativo a WHERE TYPE(a) = :tipo AND a.ativoNaCarteira = true", Long.class);
+        query.setParameter("tipo", tipoClasse);
+        Long resultado = query.getSingleResult();
+        return resultado != null ? resultado : 0L;
+    } catch (Exception e) {
+        e.printStackTrace();
+        return 0L; // nunca retorne null, sempre um valor válido
+    }
+    
+}
+    
+    public void desincorporar(Ativo ativo) {
+        EntityManager em = getEntityManager();
+        try {
+            em.getTransaction().begin();
+            ativo.setAtivoNaCarteira(false); // marca como desincorporado
+            em.merge(ativo);                 // atualiza no banco
+            em.getTransaction().commit();
+        } catch (Exception e) {
+            e.printStackTrace();
+            if (em.getTransaction().isActive()) {
+                em.getTransaction().rollback();
+            }
+        } finally {
+            if (em.isOpen()) {
+                em.close();
+            }
+        }
+}
+    public void reencorporar(Ativo ativo) {
+        EntityManager em = getEntityManager();
+        try {
+            em.getTransaction().begin();
+            ativo.setAtivoNaCarteira(true); // marca como desincorporado
+            em.merge(ativo);                 // atualiza no banco
+            em.getTransaction().commit();
+        } catch (Exception e) {
+            e.printStackTrace();
+            if (em.getTransaction().isActive()) {
+                em.getTransaction().rollback();
+            }
+        } finally {
+            if (em.isOpen()) {
+                em.close();
+            }
+        }
+}
     
 }

@@ -4,11 +4,19 @@
  */
 package view;
 
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
+import javax.swing.JScrollPane;
+import javax.swing.Timer;
 import javax.swing.table.DefaultTableModel;
 import model.Acao;
 import model.Ativo;
+import model.Transacao;
 import modelDAO.AtivoDAO;
+import modelDAO.TransacaoDAO;
 
 /**
  *
@@ -17,14 +25,20 @@ import modelDAO.AtivoDAO;
 public class ListaAcoesJF extends javax.swing.JFrame {
     
     AtivoDAO adao = new AtivoDAO();
+    TransacaoDAO tdao = new TransacaoDAO();
 
     /**
      * Creates new form ListaAtivosJF
      */
     public ListaAcoesJF() {
+        this.adao = adao;
         initComponents();
         loadTabelaAcoes();
         
+        Timer timer = new Timer(5000, e-> loadTabelaAcoes());
+        timer.start();
+        
+        jScrollPane1.setViewportView(tblListaAcoes);
     }
 
     /**
@@ -43,18 +57,19 @@ public class ListaAcoesJF extends javax.swing.JFrame {
         btnComprarAcao = new javax.swing.JButton();
         btnVender = new javax.swing.JButton();
         btnVoltar = new javax.swing.JButton();
+        btnDesincorporar = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
         tblListaAcoes.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
-                {null, null, null, null, null, null},
-                {null, null, null, null, null, null},
-                {null, null, null, null, null, null},
-                {null, null, null, null, null, null}
+                {null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null},
+                {null, null, null, null, null, null, null}
             },
             new String [] {
-                "Ticker", "Quantidade", "Descrição", "Valor Atual", "Valor de Compra", "Data da Compra (Última)"
+                "Ticker", "Quantidade", "Descrição", "Valor Atual", "Valor de Compra", "Última Compra", "Valor da Posição"
             }
         ));
         jScrollPane1.setViewportView(tblListaAcoes);
@@ -90,6 +105,13 @@ public class ListaAcoesJF extends javax.swing.JFrame {
             }
         });
 
+        btnDesincorporar.setText("Desincorporar da Carteira");
+        btnDesincorporar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnDesincorporarActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -101,18 +123,20 @@ public class ListaAcoesJF extends javax.swing.JFrame {
                 .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 257, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(382, 382, 382))
             .addGroup(layout.createSequentialGroup()
-                .addGap(17, 17, 17)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 997, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addContainerGap(20, Short.MAX_VALUE))
-                    .addGroup(layout.createSequentialGroup()
+                        .addGap(17, 17, 17)
                         .addComponent(btnEditarAcao, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(34, 34, 34)
                         .addComponent(btnComprarAcao, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(27, 27, 27)
                         .addComponent(btnVender, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(312, 312, 312))))
+                        .addGap(201, 201, 201)
+                        .addComponent(btnDesincorporar))
+                    .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 997, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(31, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -121,13 +145,14 @@ public class ListaAcoesJF extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jLabel1)
                     .addComponent(btnVoltar, javax.swing.GroupLayout.PREFERRED_SIZE, 19, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGap(18, 18, 18)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 484, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(btnEditarAcao)
                     .addComponent(btnComprarAcao)
-                    .addComponent(btnVender))
+                    .addComponent(btnVender)
+                    .addComponent(btnDesincorporar))
                 .addContainerGap(12, Short.MAX_VALUE))
         );
 
@@ -169,7 +194,7 @@ public class ListaAcoesJF extends javax.swing.JFrame {
             // ✅ FIM DO BLOCO DE VERIFICAÇÃO DE TIPO (CHAVE FINAL DENTRO DO if(ativoEncontrado != null))
         } else {
             // Ativo não encontrado (ativoEncontrado == null)
-            JOptionPane.showMessageDialog(rootPane, "Ação não encontrada. Verifique se o código está correto.", "Erro de Busca", JOptionPane.WARNING_MESSAGE);
+            JOptionPane.showMessageDialog(rootPane, "Ação não encontrada. Verifique se o Ticker está correto.", "Erro de Busca", JOptionPane.WARNING_MESSAGE);
         }
     } else {
         JOptionPane.showMessageDialog(rootPane, "Selecione uma linha para editar.", "Atenção", JOptionPane.INFORMATION_MESSAGE);
@@ -192,6 +217,47 @@ public class ListaAcoesJF extends javax.swing.JFrame {
         // TODO add your handling code here:
         this.dispose();
     }//GEN-LAST:event_btnVoltarActionPerformed
+
+    private void btnDesincorporarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDesincorporarActionPerformed
+        // TODO add your handling code here:
+
+        if (tblListaAcoes.getSelectedRow() != -1) {
+
+            String tickerAcao = (String) tblListaAcoes.getModel().getValueAt(tblListaAcoes.getSelectedRow(), 0);
+            Ativo ativoEncontrado = adao.buscarAtivo(tickerAcao);
+            
+            
+
+            if (ativoEncontrado != null) {
+                 int op_remover = JOptionPane.showConfirmDialog(rootPane, "VOCÊ TEM CERTEZA DE QUE DESEJA REMOVER O TICKER " + tickerAcao + " COMPLETAMENTE DE SUA CARTEIRA? ", "ATENÇÃO!", JOptionPane.OK_CANCEL_OPTION);
+                 
+                 if(op_remover == JOptionPane.OK_OPTION)
+                 {
+                     try{
+                         int quantidade = ativoEncontrado.getQuantidade();
+                         
+                         registrarTransacao(ativoEncontrado, quantidade);
+                         
+                         adao.desincorporar(ativoEncontrado);
+                         
+                         JOptionPane.showMessageDialog(this, quantidade + " COTAS DE " + tickerAcao + " FORAM VENDIDAS E O ATIVO FOI DESINCORPORADO DE SUA CARTEIRA.");
+                         
+                     }catch(Exception e)
+                     {
+                         JOptionPane.showMessageDialog(this, "Erro ao tentar DESINCORPORAR O ATIVO");
+                         e.printStackTrace();
+                         return;
+                     }
+                 }
+            
+            }
+        }
+        else
+        {
+            JOptionPane.showMessageDialog(rootPane, "Selecione uma linha para editar.", "Atenção", JOptionPane.INFORMATION_MESSAGE);
+        }
+
+    }//GEN-LAST:event_btnDesincorporarActionPerformed
 
     /**
      * @param args the command line arguments
@@ -233,21 +299,49 @@ public class ListaAcoesJF extends javax.swing.JFrame {
         DefaultTableModel modelo = (DefaultTableModel) tblListaAcoes.getModel();
         modelo.setNumRows(0);
         
-        for(Ativo obj : adao.listaAcoes()){
+        List<Ativo> ativos = adao.listaAtivosPorTipo(Acao.class);
+        
+        for(Ativo obj : ativos){
+            obj.atualizarValorAleatorio();
+            
+            String valorAtualFmt   = String.format("%.2f", obj.getValorAtual());
+            String valorCompraFmt  = String.format("%.2f", obj.getValorCompra());
+            String valorPosicaoFmt = String.format("%.2f", obj.getQuantidade() * obj.getValorAtual());
+            
             Object[] linha = {
                 obj.getTicker(),
                 obj.getQuantidade(),
                 obj.getDescricao(),
-                obj.getValorAtual(),
-                obj.getValorCompra(),
-                obj.getDataCompra()
+                valorAtualFmt,
+                valorCompraFmt,
+                obj.getDataCompra(),
+                valorPosicaoFmt
             };
             modelo.addRow(linha);
         }
     }
+    
+    private void registrarTransacao(Ativo acao, int quantidade){
+        Transacao transacao = new Transacao();
+        
+        transacao.setQuantidade(quantidade);
+        transacao.setPrecoUnitario(acao.getValorCompra());
+        transacao.setData(LocalDateTime.now());
+        transacao.setTipo(Transacao.TipoTransacao.VENDA);
+        transacao.setAtivo(acao);
+        
+        try {
+            tdao.persist(transacao);
+        } catch (Exception ex) {
+            Logger.getLogger(ComprarAcoesJD.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnComprarAcao;
+    private javax.swing.JButton btnDesincorporar;
     private javax.swing.JButton btnEditarAcao;
     private javax.swing.JButton btnVender;
     private javax.swing.JButton btnVoltar;

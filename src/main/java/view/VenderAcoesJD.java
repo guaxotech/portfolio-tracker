@@ -4,13 +4,18 @@
  */
 package view;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Vector;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JOptionPane;
 import model.Acao;
 import model.Ativo;
+import model.Transacao;
 import modelDAO.AtivoDAO;
+import modelDAO.TransacaoDAO;
 
 /**
  *
@@ -18,6 +23,7 @@ import modelDAO.AtivoDAO;
  */
 public class VenderAcoesJD extends javax.swing.JDialog {
      AtivoDAO adao = new AtivoDAO();
+     TransacaoDAO tdao = new TransacaoDAO();
     /**
      * Creates new form VenderAcoesJD
      */
@@ -41,6 +47,7 @@ public class VenderAcoesJD extends javax.swing.JDialog {
         jLabel2 = new javax.swing.JLabel();
         cmbTickers = new javax.swing.JComboBox<>();
         spnQuantidade = new javax.swing.JSpinner();
+        btnConfirmarVenda = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -49,6 +56,13 @@ public class VenderAcoesJD extends javax.swing.JDialog {
         jLabel2.setText("Quantidade");
 
         cmbTickers.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+
+        btnConfirmarVenda.setText("Confirmar Venda");
+        btnConfirmarVenda.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnConfirmarVendaActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -64,6 +78,10 @@ public class VenderAcoesJD extends javax.swing.JDialog {
                     .addComponent(cmbTickers, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(spnQuantidade, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(82, 82, 82))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(btnConfirmarVenda)
+                .addGap(137, 137, 137))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -76,11 +94,42 @@ public class VenderAcoesJD extends javax.swing.JDialog {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel2)
                     .addComponent(spnQuantidade, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(137, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 59, Short.MAX_VALUE)
+                .addComponent(btnConfirmarVenda)
+                .addGap(55, 55, 55))
         );
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void btnConfirmarVendaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnConfirmarVendaActionPerformed
+        // TODO add your handling code here:
+        String tickerSelecionado = (String) cmbTickers.getSelectedItem();
+        int quantidade = (int) spnQuantidade.getValue();
+        
+        Acao acao = (Acao) adao.buscarAtivo(tickerSelecionado);
+        
+        if(acao.getQuantidade() >= quantidade)
+        {
+            acao.setQuantidade(acao.getQuantidade() - quantidade);
+            try {
+                adao.persist(acao);
+                registrarTransacao(acao, quantidade);
+                JOptionPane.showMessageDialog(rootPane, "Venda de " + quantidade + " cotas de " + tickerSelecionado +
+                     " realizadas com sucesso! ");
+            } catch (Exception ex) {
+                Logger.getLogger(VenderAcoesJD.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        else
+        {
+            JOptionPane.showMessageDialog(rootPane, "Você não possui cotas de " + 
+                    tickerSelecionado + " suficientes para essa venda!");
+        }
+        
+        this.dispose();
+        
+    }//GEN-LAST:event_btnConfirmarVendaActionPerformed
 
     /**
      * @param args the command line arguments
@@ -125,6 +174,7 @@ public class VenderAcoesJD extends javax.swing.JDialog {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnConfirmarVenda;
     private javax.swing.JComboBox<String> cmbTickers;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
@@ -137,7 +187,7 @@ public class VenderAcoesJD extends javax.swing.JDialog {
         listaDeTickers.add("Selecione um Ticker");
         
         try{
-            List<Ativo> listaAcoes = adao.listaAcoes();
+            List<Ativo> listaAcoes = adao.listaAtivosPorTipo(Acao.class);
             
             for(Ativo ativo : listaAcoes) {
                 listaDeTickers.add(ativo.getTicker());
@@ -190,5 +240,22 @@ public class VenderAcoesJD extends javax.swing.JDialog {
            }
        });
    }
+    private void registrarTransacao(Ativo acao, int quantidade){
+        Transacao transacao = new Transacao();
+        
+        transacao.setQuantidade(quantidade);
+        transacao.setPrecoUnitario(acao.getValorCompra());
+        transacao.setData(LocalDateTime.now());
+        transacao.setTipo(Transacao.TipoTransacao.VENDA);
+        transacao.setAtivo(acao);
+        
+        try {
+            tdao.persist(transacao);
+        } catch (Exception ex) {
+            Logger.getLogger(ComprarAcoesJD.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        
+    }
 
 }

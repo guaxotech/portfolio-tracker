@@ -4,6 +4,7 @@
  */
 package view;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 import java.util.Vector;
@@ -11,8 +12,11 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JOptionPane;
+import model.Acao;
 import model.Ativo;
+import model.Transacao;
 import modelDAO.AtivoDAO;
+import modelDAO.TransacaoDAO;
 
 /**
  *
@@ -20,6 +24,7 @@ import modelDAO.AtivoDAO;
  */
 public class ComprarAcoesJD extends javax.swing.JDialog {
     AtivoDAO adao = new AtivoDAO();
+    TransacaoDAO tdao = new TransacaoDAO();
     /**
      * Creates new form EditarAcaoJD
      */
@@ -45,6 +50,8 @@ public class ComprarAcoesJD extends javax.swing.JDialog {
         cmbTickers = new javax.swing.JComboBox<>();
         spnQuantidade = new javax.swing.JSpinner();
         btnRegistrar = new javax.swing.JButton();
+        jLabel3 = new javax.swing.JLabel();
+        txtPrecoUnitario = new javax.swing.JTextField();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
 
@@ -61,37 +68,45 @@ public class ComprarAcoesJD extends javax.swing.JDialog {
             }
         });
 
+        jLabel3.setText("Preço Unitário");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGap(52, 52, 52)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 112, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(61, 61, 61)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(spnQuantidade)
-                    .addComponent(cmbTickers, 0, 87, Short.MAX_VALUE))
-                .addContainerGap(88, Short.MAX_VALUE))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(btnRegistrar)
                 .addGap(136, 136, 136))
+            .addGroup(layout.createSequentialGroup()
+                .addGap(52, 52, 52)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 112, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 133, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(40, 40, 40)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(spnQuantidade)
+                    .addComponent(cmbTickers, 0, 87, Short.MAX_VALUE)
+                    .addComponent(txtPrecoUnitario))
+                .addContainerGap(88, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(90, 90, 90)
+                .addGap(59, 59, 59)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel1)
                     .addComponent(cmbTickers, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(35, 35, 35)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                .addGap(31, 31, 31)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel2)
                     .addComponent(spnQuantidade, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 59, Short.MAX_VALUE)
+                .addGap(30, 30, 30)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel3)
+                    .addComponent(txtPrecoUnitario, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 42, Short.MAX_VALUE)
                 .addComponent(btnRegistrar)
                 .addGap(49, 49, 49))
         );
@@ -103,6 +118,12 @@ public class ComprarAcoesJD extends javax.swing.JDialog {
         // TODO add your handling code here:
         String ticker = (String) cmbTickers.getSelectedItem();
         int quantidade = (int) spnQuantidade.getValue();
+        String precoStr = txtPrecoUnitario.getText();
+        double precoUnitario = 0.0;
+        LocalDateTime dataAtual = LocalDateTime.now();
+        
+        precoStr = precoStr.replace(",", ".");
+        precoUnitario = Double.parseDouble(precoStr);
 
         Ativo acao = adao.buscarAtivo(ticker);
         int quantidadeAntiga = acao.getQuantidade();
@@ -111,9 +132,15 @@ public class ComprarAcoesJD extends javax.swing.JDialog {
 
   
         acao.setQuantidade(novaQuantidade);
+        acao.setValorCompra(precoUnitario);
+        acao.setDataCompra(dataAtual);
+        
         
         try {
             adao.persist(acao);
+            registrarTransacao((Acao) acao, quantidade);
+            JOptionPane.showMessageDialog(rootPane, "Compra de " + quantidade + " cotas de " + ticker +
+                     " realizadas com sucesso! ");
         } catch (Exception ex) {
             Logger.getLogger(ComprarAcoesJD.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -170,16 +197,18 @@ public class ComprarAcoesJD extends javax.swing.JDialog {
     private javax.swing.JComboBox<String> cmbTickers;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JSpinner spnQuantidade;
+    private javax.swing.JTextField txtPrecoUnitario;
     // End of variables declaration//GEN-END:variables
    
-    protected void carregarTickersNoComboBox() {
+    private void carregarTickersNoComboBox() {
         Vector<String> listaDeTickers = new Vector<>();
         
         listaDeTickers.add("Selecione um Ticker");
         
         try{
-            List<Ativo> listaAcoes = adao.listaAcoes();
+            List<Ativo> listaAcoes = adao.listaAtivosPorTipo(Acao.class);
             
             for(Ativo ativo : listaAcoes) {
                 listaDeTickers.add(ativo.getTicker());
@@ -217,6 +246,24 @@ public class ComprarAcoesJD extends javax.swing.JDialog {
         } catch (Exception ex) {
             Logger.getLogger(ComprarAcoesJD.class.getName()).log(Level.SEVERE, null, ex);
         }
+    }
+    
+    private void registrarTransacao(Ativo acao, int quantidade){
+        Transacao transacao = new Transacao();
+        
+        transacao.setQuantidade(quantidade);
+        transacao.setPrecoUnitario(acao.getValorCompra());
+        transacao.setData(LocalDateTime.now());
+        transacao.setTipo(Transacao.TipoTransacao.COMPRA);
+        transacao.setAtivo(acao);
+        
+        try {
+            tdao.persist(transacao);
+        } catch (Exception ex) {
+            Logger.getLogger(ComprarAcoesJD.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        
     }
 
 }

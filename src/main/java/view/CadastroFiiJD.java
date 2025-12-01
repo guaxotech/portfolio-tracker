@@ -4,10 +4,18 @@
  */
 package view;
 
+import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import model.Acao;
+import model.Ativo;
 import model.FundoImobiliario;
+import model.Transacao;
 import modelDAO.AtivoDAO;
+import modelDAO.TransacaoDAO;
 
 /**
  *
@@ -20,6 +28,7 @@ public class CadastroFiiJD extends javax.swing.JDialog {
     
     
     AtivoDAO adao = new AtivoDAO();
+    TransacaoDAO tdao = new TransacaoDAO();
 
     /**
      * Creates new form CadastroFiiJD
@@ -28,6 +37,7 @@ public class CadastroFiiJD extends javax.swing.JDialog {
         super(parent, modal);
         initComponents();
         this.telaEdicao = false;
+        txtQuantidade.setEnabled(false);
     }
     
     public CadastroFiiJD(java.awt.Frame parent, boolean modal, FundoImobiliario fii)
@@ -190,57 +200,92 @@ public class CadastroFiiJD extends javax.swing.JDialog {
 
     private void btnCadastrarFiiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCadastrarFiiActionPerformed
         // TODO add your handling code here:
-        
-        if(fii == null)
+      
+        if (fii == null) {
             fii = new FundoImobiliario();
-        
-        try{
-              String tickerSelecionado = (String) txtTicker.getSelectedItem();
-              
-              if(tickerSelecionado == null || tickerSelecionado.isEmpty())
-              {
-                  JOptionPane.showMessageDialog(this, "Por favor, selecione um ticker.", "Erro", JOptionPane.ERROR_MESSAGE);
-                  return;
-              }
-              
-              String descricao = (String) txtDescricao.getText().trim();
-              
-              int quantidade = (int) txtQuantidade.getValue();
-              
-              String precoStr = txtPrecoUnitario.getText();
-              
-              double precoUnitario = 0.0;
-              
-              try {
-                precoStr = precoStr.replace(",", ".");
+        }
+               
 
-                precoUnitario = Double.parseDouble(precoStr);
-            } catch (NumberFormatException e) {
-                JOptionPane.showMessageDialog(this, "O preço unitário inserido não é um número válido.", "Erro de Formato", JOptionPane.ERROR_MESSAGE);
-                e.printStackTrace();
-            }
-              
-              fii.setTicker(tickerSelecionado);
-              fii.setDescricao(descricao);
-              fii.setQuantidade(quantidade);
-              fii.setValorCompra(precoUnitario);
-              fii.setValorAtual(precoUnitario);
-              
-              
-              /// Chamada do DAO
-              AtivoDAO dao = new AtivoDAO();
-              
-              dao.persist(fii);
-              
+        try {
+            String tickerSelecionado = (String) txtTicker.getSelectedItem();
             
-              JOptionPane.showMessageDialog(rootPane, "Atualização Realizada com Sucesso!");
-              
+            if (tickerSelecionado == null || tickerSelecionado.isEmpty()) {
+                    JOptionPane.showMessageDialog(this, "Por favor, selecione um ticker.", "Erro", JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
+            Boolean jaCadastrado = adao.buscarAtivoJaCadastrado(tickerSelecionado);
+            Boolean desincorporado = adao.verificarAtivoDesincorporado(tickerSelecionado);
+                       
+            if (jaCadastrado && !telaEdicao) { // o ativo já está cadastrado e incorporado
+                JOptionPane.showMessageDialog(this, "Esse ativo já está cadastrado, vá para a seção de compra/venda/listagem "
+                        + "para movimentar ele. ", "Aviso", JOptionPane.INFORMATION_MESSAGE);
+                return;
+            } else if (desincorporado && !telaEdicao) { // o ativo encontra-se desincorporado
+                Ativo ativoEncontrado = adao.buscarAtivoDesincorporado(tickerSelecionado);
+                ativoEncontrado.setDescricao((String) txtDescricao.getText().trim());
+                adao.reencorporar(ativoEncontrado);
+
+                JOptionPane.showMessageDialog(this, "O Ativo " + ativoEncontrado.getTicker()
+                        + " foi reencorporado a sua carteira! ", "Aviso", JOptionPane.INFORMATION_MESSAGE);
+                this.dispose();
+                return;
+            }            
+            else { // o ativo não encontra-se cadastrado e tampouco incorporado
+    
+                // captura dos campos
+                
+                // ticker -> já foi capturado anteriormente
+                String descricao = (String) txtDescricao.getText().trim();
+                // quantidade (optei por não registrar quantidades na hora do cadastro)
+                String precoStr = txtPrecoUnitario.getText();
+                double precoUnitario = 0.0;
+                try {
+                    precoStr = precoStr.replace(",", ".");
+                    precoUnitario = Double.parseDouble(precoStr);
+                } catch (NumberFormatException e) {
+                    JOptionPane.showMessageDialog(this, "O preço unitário inserido não é um número válido.", "Erro de Formato", JOptionPane.ERROR_MESSAGE);
+                    e.printStackTrace();
+                    return;
+                }
+                String tipoFundo = (String) txtTipoFundo.getSelectedItem();
+                tipoFundo = tipoFundo.toLowerCase();
+                
+
+                fii.setTicker(tickerSelecionado);
+                fii.setDescricao(descricao);
+                fii.setValorCompra(precoUnitario);
+                fii.setValorAtual(precoUnitario);
+                
+                if(tipoFundo.equals("tijolo")) {fii.setTipo(FundoImobiliario.tipoFundo.TIJOLO);}
+                else if(tipoFundo.equals("papel")) {fii.setTipo(FundoImobiliario.tipoFundo.PAPEL);}
+                
+                fii.setDataCompra(LocalDateTime.now());
+                
+                try{
+                adao.persist(fii);
+                }catch(Exception e)
+                {
+                    e.printStackTrace();
+                    return;
+                }
+            }
+
+            if (!telaEdicao && !desincorporado) // cadastrado regularmente
+            {
+                JOptionPane.showMessageDialog(this, "Cadastro de " + tickerSelecionado
+                        + " realizado com sucesso! Agora este Ativo está incorporado a sua carteira.");
+            } else if (!telaEdicao && desincorporado) { // foi reencorporado a carteira
+                this.dispose();
+            } else if (telaEdicao) { // foi atualizado
+                JOptionPane.showMessageDialog(this, "Atualização de " + tickerSelecionado
+                        + " realizada com sucesso!");
+            }
+
+        } catch (Exception e) {
+
         }
-        catch(Exception e)
-        {
-             
-        }
-        
+
         this.dispose();
     }//GEN-LAST:event_btnCadastrarFiiActionPerformed
 
@@ -324,4 +369,24 @@ public class CadastroFiiJD extends javax.swing.JDialog {
         txtQuantidade.setEnabled(false);
         
     }
+    
+    /*
+    private void registrarTransacao(Ativo fii, int quantidade){
+        Transacao transacao = new Transacao();
+        
+        transacao.setQuantidade(quantidade);
+        transacao.setPrecoUnitario(fii.getValorCompra());
+        transacao.setData(LocalDateTime.now());
+        transacao.setTipo(Transacao.TipoTransacao.COMPRA);
+        transacao.setAtivo(fii);
+        
+        try {
+            tdao.persist(transacao);
+        } catch (Exception ex) {
+            Logger.getLogger(ComprarAcoesJD.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        
+    }
+*/
 }

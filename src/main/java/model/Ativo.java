@@ -52,6 +52,9 @@ public abstract class Ativo {
     @Column(name = "data_compra")
     private LocalDateTime dataCompra;
     
+    @Column(name = "ativo_carteira")
+    private boolean ativoNaCarteira = true;
+    
     
     public Ativo(){
         
@@ -112,6 +115,27 @@ public abstract class Ativo {
 
     public void setDataCompra(LocalDateTime dataCompra) {
         this.dataCompra = dataCompra;
+    }
+    
+    public void atualizarValorAleatorio() { 
+        double variacao = (Math.random() - 0.5) * 0.05; // -2.5% a +2.5% 
+        this.valorAtual = this.valorAtual * (1 + variacao); 
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public boolean isAtivoNaCarteira() {
+        return ativoNaCarteira;
+    }
+
+    public void setAtivoNaCarteira(boolean ativoNaCarteira) {
+        this.ativoNaCarteira = ativoNaCarteira;
     }
 
     

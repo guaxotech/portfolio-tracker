@@ -18,7 +18,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.File;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import model.Ativo;
+import model.Transacao;
+import modelDAO.TransacaoDAO;
 import modelReferencias.DadosAcao;
 import util.Utilitarios;
 
@@ -32,6 +36,7 @@ public class CadastroAcaoJD extends javax.swing.JDialog {
     private boolean modoEdicao = false;
 
     AtivoDAO adao = new AtivoDAO();
+    TransacaoDAO tdao = new TransacaoDAO();
 
     /**
      * Creates new form CadastroInvestimentoJD
@@ -43,6 +48,7 @@ public class CadastroAcaoJD extends javax.swing.JDialog {
         initComponents();
         this.modoEdicao = false;
         btnSalvarAcao.setText("Cadastrar");
+        txtQuantidade.setEnabled(false);
         
         JComboBox<TickersAcao> comboTickersAcao = new JComboBox<>();
         
@@ -58,7 +64,7 @@ public class CadastroAcaoJD extends javax.swing.JDialog {
         this(parent, modal);
         this.acao = acao;
         this.modoEdicao = true;
-        
+          
         // método que aplica as mudanças visuais (Título e botão confirm)
         configurarParaEdicao();
         
@@ -212,10 +218,23 @@ public class CadastroAcaoJD extends javax.swing.JDialog {
               String tickerSelecionado = (String) txtTicker.getSelectedItem();
               
               Boolean jaCadastrado = adao.buscarAtivoJaCadastrado(tickerSelecionado);
+              Boolean desincorporado = adao.verificarAtivoDesincorporado(tickerSelecionado);
               
-              if(jaCadastrado && !modoEdicao)
+              if(jaCadastrado && !modoEdicao) 
               {
                   JOptionPane.showMessageDialog(this, "Esse ativo já está cadastrado, vá para a seção de compra/venda/listagem para movimentar ele. ", "Aviso", JOptionPane.INFORMATION_MESSAGE);
+                  return;
+              }
+              else if(desincorporado && !modoEdicao)
+              {               
+                 Ativo ativoEncontrado = adao.buscarAtivoDesincorporado(tickerSelecionado);
+                 
+                 ativoEncontrado.setDescricao((String) txtDescricao.getText().trim());
+                   
+                 adao.reencorporar(ativoEncontrado);
+                 JOptionPane.showMessageDialog(this, "O Ativo " + ativoEncontrado.getTicker() + " foi reencorporado a sua carteira! ", "Aviso", JOptionPane.INFORMATION_MESSAGE);
+                 this.dispose();
+                 
               }
               else
               {
@@ -226,11 +245,7 @@ public class CadastroAcaoJD extends javax.swing.JDialog {
               }
               
               String descricao = (String) txtDescricao.getText().trim();
-              
-              int quantidade = (int) txtQuantidade.getValue();
-              
               String precoStr = txtPrecoUnitario.getText();
-              
               double precoUnitario = 0.0;
               
               try {
@@ -243,9 +258,10 @@ public class CadastroAcaoJD extends javax.swing.JDialog {
                 return;
             }
               
+              
               acao.setTicker(tickerSelecionado);
               acao.setDescricao(descricao);
-              acao.setQuantidade(quantidade);
+              //acao.setQuantidade(quantidade);
               acao.setValorCompra(precoUnitario);
               acao.setValorAtual(precoUnitario);
               acao.setDataCompra(LocalDateTime.now());
@@ -258,11 +274,20 @@ public class CadastroAcaoJD extends javax.swing.JDialog {
                   acao.setNomeEmpresa(dados.getEmpresa());
               }
               
-              /// Chamada do DAO
-              AtivoDAO dao = new AtivoDAO();
+             
+              adao.persist(acao);
               
-              dao.persist(acao);
-              
+  
+              if(!modoEdicao)
+              {
+              JOptionPane.showMessageDialog(this, "Cadastro de " + tickerSelecionado
+              + " realizado com sucesso! Agora este Ativo está incorporado a sua carteira.");
+              //registrarTransacao(acao, quantidade);
+              }
+              else{
+                  JOptionPane.showMessageDialog(this, "Atualização de " + tickerSelecionado
+              + " realizada com sucesso!");
+              }
               this.dispose();
               }
         }
@@ -355,5 +380,24 @@ public class CadastroAcaoJD extends javax.swing.JDialog {
        txtQuantidade.setEnabled(false);
        
    }
-
+   
+   /*
+   private void registrarTransacao(Ativo acao, int quantidade){
+        Transacao transacao = new Transacao();
+        
+        transacao.setQuantidade(quantidade);
+        transacao.setPrecoUnitario(acao.getValorCompra());
+        transacao.setData(LocalDateTime.now());
+        transacao.setTipo(Transacao.TipoTransacao.COMPRA);
+        transacao.setAtivo(acao);
+        
+        try {
+            tdao.persist(transacao);
+        } catch (Exception ex) {
+            Logger.getLogger(ComprarAcoesJD.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        
+    }
+*/
 }

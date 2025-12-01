@@ -4,6 +4,7 @@
  */
 package view;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Vector;
 import java.util.logging.Level;
@@ -11,7 +12,10 @@ import java.util.logging.Logger;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JOptionPane;
 import model.Ativo;
+import model.FundoImobiliario;
+import model.Transacao;
 import modelDAO.AtivoDAO;
+import modelDAO.TransacaoDAO;
 
 /**
  *
@@ -19,6 +23,7 @@ import modelDAO.AtivoDAO;
  */
 public class ComprarFiisJD extends javax.swing.JDialog {
     AtivoDAO adao = new AtivoDAO();
+    TransacaoDAO tdao = new TransacaoDAO();
 
     /**
      * Creates new form ComprarFiisJD
@@ -45,6 +50,8 @@ public class ComprarFiisJD extends javax.swing.JDialog {
         spnQuantidade = new javax.swing.JSpinner();
         cmbTickers = new javax.swing.JComboBox<>();
         btnComprar = new javax.swing.JButton();
+        txtPrecoUnitario = new javax.swing.JTextField();
+        jLabel3 = new javax.swing.JLabel();
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -72,37 +79,51 @@ public class ComprarFiisJD extends javax.swing.JDialog {
             }
         });
 
+        txtPrecoUnitario.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtPrecoUnitarioActionPerformed(evt);
+            }
+        });
+
+        jLabel3.setText("Preco Unitário");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addGap(77, 77, 77)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 108, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 108, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 35, Short.MAX_VALUE)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(spnQuantidade, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(cmbTickers, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(60, 60, 60))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(btnComprar)
                 .addGap(151, 151, 151))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addGap(77, 77, 77)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(jLabel2, javax.swing.GroupLayout.DEFAULT_SIZE, 108, Short.MAX_VALUE)
+                    .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, 108, Short.MAX_VALUE)
+                    .addComponent(jLabel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 35, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(spnQuantidade, javax.swing.GroupLayout.DEFAULT_SIZE, 120, Short.MAX_VALUE)
+                    .addComponent(cmbTickers, 0, 120, Short.MAX_VALUE)
+                    .addComponent(txtPrecoUnitario))
+                .addGap(60, 60, 60))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(89, 89, 89)
+                .addGap(58, 58, 58)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel1)
                     .addComponent(cmbTickers, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(52, 52, 52)
+                .addGap(39, 39, 39)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(spnQuantidade, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel2))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 46, Short.MAX_VALUE)
+                    .addComponent(jLabel2)
+                    .addComponent(spnQuantidade, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(34, 34, 34)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(txtPrecoUnitario, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel3))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 34, Short.MAX_VALUE)
                 .addComponent(btnComprar)
                 .addGap(46, 46, 46))
         );
@@ -113,15 +134,24 @@ public class ComprarFiisJD extends javax.swing.JDialog {
     private void btnComprarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnComprarActionPerformed
         // TODO add your handling code here:
         String ticker = (String) cmbTickers.getSelectedItem();
+        
         int quantidade = (int) spnQuantidade.getValue();
+        
+        String precoStr = txtPrecoUnitario.getText();
+        double precoUnitario = 0.0; 
+        precoStr = precoStr.replace(",", ".");
+        precoUnitario = Double.parseDouble(precoStr);
+        
         Ativo ativoEncontrado = adao.buscarAtivo(ticker);
         
         int novaQuantidade = ativoEncontrado.getQuantidade() + quantidade;
         
         ativoEncontrado.setQuantidade(novaQuantidade);
+        ativoEncontrado.setValorCompra(precoUnitario);
         
         try {
             adao.persist(ativoEncontrado);
+            registrarTransacao(ativoEncontrado, quantidade);
             JOptionPane.showMessageDialog(rootPane, "Compra de " + quantidade + " cotas de " + ticker +
                      " realizadas com sucesso! ");
         } catch (Exception ex) {
@@ -130,6 +160,10 @@ public class ComprarFiisJD extends javax.swing.JDialog {
         
         this.dispose();
     }//GEN-LAST:event_btnComprarActionPerformed
+
+    private void txtPrecoUnitarioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtPrecoUnitarioActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtPrecoUnitarioActionPerformed
 
     /**
      * @param args the command line arguments
@@ -178,8 +212,10 @@ public class ComprarFiisJD extends javax.swing.JDialog {
     private javax.swing.JComboBox<String> cmbTickers;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JSpinner spnQuantidade;
+    private javax.swing.JTextField txtPrecoUnitario;
     // End of variables declaration//GEN-END:variables
     
        private void carregarTickersNoComboBox() {
@@ -188,7 +224,7 @@ public class ComprarFiisJD extends javax.swing.JDialog {
            listaDeTickers.add("Selecione um Ticker");
            
            try{
-               List<Ativo> listaFiis = adao.listaFiis();
+               List<Ativo> listaFiis = adao.listaAtivosPorTipo(FundoImobiliario.class); 
                
                for(Ativo ativo : listaFiis) {
                    listaDeTickers.add(ativo.getTicker());
@@ -203,4 +239,21 @@ public class ComprarFiisJD extends javax.swing.JDialog {
             e.printStackTrace();
            }
        }
+       private void registrarTransacao(Ativo fii, int quantidade){
+        Transacao transacao = new Transacao();
+        
+        transacao.setQuantidade(quantidade);
+        transacao.setPrecoUnitario(fii.getValorCompra());
+        transacao.setData(LocalDateTime.now());
+        transacao.setTipo(Transacao.TipoTransacao.COMPRA);
+        transacao.setAtivo(fii);
+        
+        try {
+            tdao.persist(transacao);
+        } catch (Exception ex) {
+            Logger.getLogger(ComprarAcoesJD.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        
+    }
 }
