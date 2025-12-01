@@ -53,13 +53,14 @@ O projeto foi construído utilizando os seguintes padrões e ferramentas para ga
 ---
 
 ## 📂 Estrutura do Projeto
-src/ 
-├── model/     # Entidades de dados 
-├── modelDAO/  # Camada DAO (persistência) 
-├── view/      # Interface gráfica (Swing) 
-├── util/      # Utilitários e helpers 
-├── modelReferencias/ # Arquivo JSON com informações mais detalhadas sobre as Ações 
-└── resources/   # Arquivos de configuração (persistence.xml, etc.)
+src/
+ ├── model/             # Entidades de dados
+ ├── modelDAO/          # Camada DAO (persistência)
+ ├── view/              # Interface gráfica (Swing)
+ ├── util/              # Utilitários e helpers
+ ├── modelReferencias/  # Arquivo JSON com informações mais detalhadas sobre as Ações
+ └── resources/         # Arquivos de configuração (persistence.xml, etc.)
+
 
 
 ## Roadmap
