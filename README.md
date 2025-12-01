@@ -3,6 +3,9 @@
 
 Aplicação desktop desenvolvida em **Java**, com foco em **monitoramento e gestão de carteiras de investimento**, combinando **arquitetura robusta** e **experiência do usuário (UI/UX)** moderna.
 
+**Ideia Geral**
+Plataforma de gestão de carteira de investimentos, que permite acompanhar ativos e métricas essenciais, trazendo clareza e insights para decisões financeiras inteligentes.
+
 ---
 
 ## 🛠️ Stack Tecnológica e Arquitetura
